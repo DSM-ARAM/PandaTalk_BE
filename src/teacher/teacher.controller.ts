@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Post } from '@nestjs/common';
 import { Teacher } from './entity/teacher.entity';
 import { TeacherService } from './teacher.service';
 
@@ -16,6 +16,16 @@ export class TeacherController {
         return Object.assign({
             data: { ...teacher },
             statusCode: 200,
+            statusMsg: 'Success'
+        })
+    }
+
+    @Delete('signUp')
+    async deleteAccTeacher(@Body() teacherID: number): Promise<Object> {
+        await this.teacherService.deleteAccTeacher(teacherID);
+        return Object.assign({
+            data: {},
+            statusCode: 204,
             statusMsg: 'Success'
         })
     }

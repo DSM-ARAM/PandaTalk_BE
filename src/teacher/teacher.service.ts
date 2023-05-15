@@ -2,7 +2,7 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Teacher } from './entity/teacher.entity';
-import { CreateTeacherDto } from './DTO/teacher.dto';
+import { CreateTeacherDto } from './DTO/CreateTeacher.dto';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -32,6 +32,16 @@ export class TeacherService {
             teacherPhone: teacher.teacherPhone,
             teacherPW: teacherPW
         });
+
+        return;
+    }
+
+    async deleteAccTeacher(teacherID: number): Promise<void>{
+
+        const thisTeacher = await this.teacherRepository.findOneBy({ teacherID })
+        if (!thisTeacher) throw new NotFoundException();
+        
+        await this.teacherRepository.remove(thisTeacher);
 
         return;
     }
