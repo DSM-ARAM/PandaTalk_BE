@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Post } from '@nestjs/common';
+import { LoggingTeacherDto } from './DTO/LoggingTeacher.dto';
 import { Teacher } from './entity/teacher.entity';
 import { TeacherService } from './teacher.service';
 
@@ -26,6 +27,16 @@ export class TeacherController {
         return Object.assign({
             data: {},
             statusCode: 204,
+            statusMsg: 'Success'
+        })
+    }
+
+    @Post('signIn')
+    async loggingAccTeacher(@Body() teacher: LoggingTeacherDto): Promise<Object> {
+        const token = await this.teacherService.LogAccTeacher(teacher);
+        return Object.assign({
+            data: {token},
+            statusCode: 201,
             statusMsg: 'Success'
         })
     }

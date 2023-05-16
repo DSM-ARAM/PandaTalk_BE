@@ -25,6 +25,7 @@ export class Teacher {
         type: "varchar",
         nullable: false,
         unique: true,
+        length: 30,
     })
     teacherMail: string;
 
@@ -32,12 +33,14 @@ export class Teacher {
         type: "int",
         nullable: false,
         unique: true,
+        width: 11,
     })
     teacherPhone: number;
 
     @Column({
         type: "varchar",
         nullable: false,
+        length: 100,
     })
     teacherPW: string;
 }
