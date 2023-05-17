@@ -43,4 +43,11 @@ export class Teacher {
         length: 100,
     })
     teacherPW: string;
+
+    @Column({
+        type: "varchar",
+        nullable: true,
+        length: 100,
+    })
+    teacherRefreshToken: string;
 }
