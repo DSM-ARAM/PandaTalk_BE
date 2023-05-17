@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException, Options, UnauthorizedException, UnprocessableEntityException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Teacher } from './entity/teacher.entity';
@@ -7,7 +7,6 @@ import * as bcrypt from 'bcrypt';
 import { LoggingTeacherDto } from './dto/LoggingTeacher.dto';
 import { JwtService } from '@nestjs/jwt'
 import { DeleteTeacherTokenDto } from './dto/DeleteTeacherToken.dto';
-import { DecodedTeacherTokenDto } from './dto/DecodedTeacherToken.dto';
 
 
 @Injectable()
@@ -61,7 +60,7 @@ export class TeacherService {
         return 'Success';
     }
 
-    async LogAccTeacher(teacher: LoggingTeacherDto): Promise<string> {
+    async LogAccTeacher(teacher: LoggingTeacherDto): Promise<string | Object> {
 
         const { teacherMail, teacherPW } = teacher;
 
@@ -71,9 +70,28 @@ export class TeacherService {
         const isVaildatePW = await bcrypt.compare(teacherPW, thisTeacher.teacherPW);
         if (!isVaildatePW) return 'ConflictException';
 
-        return this.jwtService.sign({
+        const tokens = {
+            accessToken: await this.jwtService.sign({
                 email: teacherMail,
                 id: thisTeacher.teacherID
+            }, {
+                secret: process.env.JWT_ACCESS_SECRET_KEY,
+                expiresIn: '4h',
+            }),
+            refreshToken: await bcrypt.hash(await this.jwtService.sign({
+                email: teacherMail,
+                id: thisTeacher.teacherID
+            }, { 
+                secret: process.env.JWT_REFRESH_SECRET_KEY,
+                expiresIn: '168h'
+            }), 10)
+        }
+
+        await this.teacherRepository.update(thisTeacher.teacherID, {
+            teacherRefreshToken: await bcrypt.hash(tokens.refreshToken, 10),
         })
+
+        return tokens;
+        
     }
 }

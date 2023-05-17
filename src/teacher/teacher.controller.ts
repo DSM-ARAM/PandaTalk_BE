@@ -45,8 +45,8 @@ export class TeacherController {
     async loggingAccTeacher(@Body() teacher: LoggingTeacherDto): Promise<Object> {
         const token = await this.teacherService.LogAccTeacher(teacher);
 
-        if (token.length >= 20) return Object.assign({
-            data: { token },
+        if (typeof(token) == 'object') return Object.assign({
+            data: token,
             statusCode: 201,
             statusMsg: 'Success'
         })

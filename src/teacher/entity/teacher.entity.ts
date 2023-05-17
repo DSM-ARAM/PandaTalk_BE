@@ -1,3 +1,4 @@
+import { Exclude } from "class-transformer";
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
@@ -44,10 +45,11 @@ export class Teacher {
     })
     teacherPW: string;
 
+    @Exclude()
     @Column({
         type: "varchar",
         nullable: true,
-        length: 100,
+        length: 200,
     })
     teacherRefreshToken: string;
 }
