@@ -5,9 +5,13 @@ import { TeacherController } from './teacher.controller';
 import { TeacherService } from './teacher.service';
 import { JwtStrategy } from 'src/token/jwt.strategy';
 import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule } from '@nestjs/config';
+import tokenConfig from 'src/config/token.config';
+
 
 @Module({
   imports: [
+    ConfigModule.forFeature( tokenConfig ),
     TypeOrmModule.forFeature(
       [Teacher]
     ),

@@ -28,7 +28,9 @@ export class TeacherController {
 
     @Delete('signUp')
     async deleteAccTeacher(@Headers() token: DeleteTeacherTokenDto): Promise<Object> {
-        if (!token.authorization) throw new UnauthorizedException("로그인이 필요합니다.");
+        console.log(token)
+
+        if (!token.refreshtoken && !token.accesstoken) throw new UnauthorizedException("로그인이 필요합니다.");
 
         const res = await this.teacherService.deleteAccTeacher(token);
         if (res == 'success') return Object.assign({

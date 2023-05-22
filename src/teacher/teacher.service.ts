@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Teacher } from './entity/teacher.entity';
@@ -7,17 +7,23 @@ import * as bcrypt from 'bcrypt';
 import { LoggingTeacherDto } from './dto/LoggingTeacher.dto';
 import { JwtService } from '@nestjs/jwt'
 import { DeleteTeacherTokenDto } from './dto/DeleteTeacherToken.dto';
-
+import tokenConfig from 'src/config/token.config';
+import { ConfigType } from '@nestjs/config';
 
 @Injectable()
 export class TeacherService {
     constructor(
         @InjectRepository(Teacher) private teacherRepository: Repository<Teacher>,
+        @Inject(tokenConfig.KEY) private config: ConfigType<typeof tokenConfig>,
         private readonly jwtService: JwtService
     ) {
         this.teacherRepository = teacherRepository;
+        this.config = config;
         this.jwtService = jwtService;
     }
+
+    accessSecret: string = this.config.accessSecret;
+    refreshSecret: string = this.config.refreshSecret;
 
     async createAccTeacher(teacher: CreateTeacherDto): Promise<string>{
         if (!teacher) return 'BadRequestException';
@@ -31,25 +37,43 @@ export class TeacherService {
         if (thisTeacher) return 'ConflictException';
 
         const teacherPW = await bcrypt.hash(teacher.teacherPW, 10);
+
         await this.teacherRepository.save({
             teacherName: teacher.teacherName,
             teacherDepartment: teacher.teacherDepartment,
             teacherMail: teacher.teacherMail,
             teacherPhone: teacher.teacherPhone,
-            teacherPW: teacherPW
+            teacherPW,
         });
 
         return 'success';
     }
 
     async deleteAccTeacher(token: DeleteTeacherTokenDto): Promise<string>{
-        const secret = process.env.JWT_SECRET_KEY;
 
-        const auth: string = token.authorization.replace('Bearer ', '');
+        console.log(token)
 
-        if (!this.jwtService.verifyAsync(auth, { secret })) return 'UnauthorizedException';
+        const access: string = token.accesstoken.replace('Bearer ', '');
+        const refresh: string = token.refreshtoken.replace('Bearer ', '')
 
-        const teacherID = await this.jwtService.decode(auth, { complete: true }).payload.id;
+        if (!this.jwtService.verifyAsync(access, { secret: this.accessSecret })) {
+            if (!this.jwtService.verifyAsync(refresh, { secret: this.refreshSecret })) return 'UnauthorizedException';
+            else {
+                const decrypt = this.jwtService.decode(token.refreshtoken, {
+                    complete: true,
+                })
+                
+                this.jwtService.sign({
+                    email: decrypt.payload.email,
+                    id: decrypt.payload.id,
+                }, {
+                    secret: this.accessSecret,
+                    expiresIn: '4h'
+                })
+            }
+        }
+
+        const teacherID = this.jwtService.decode(access, { complete: true }).payload.id;
 
         const thisTeacher = await this.teacherRepository.findOne({ where: { teacherID } })
         console.log(thisTeacher, 'hello!');
@@ -57,7 +81,7 @@ export class TeacherService {
         
         await this.teacherRepository.remove(thisTeacher);
 
-        return 'Success';
+        return 'success';
     }
 
     async LogAccTeacher(teacher: LoggingTeacherDto): Promise<string | Object> {
@@ -71,24 +95,30 @@ export class TeacherService {
         if (!isVaildatePW) return 'ConflictException';
 
         const tokens = {
-            accessToken: await this.jwtService.sign({
+            accessToken: this.jwtService.sign({
                 email: teacherMail,
                 id: thisTeacher.teacherID
             }, {
-                secret: process.env.JWT_ACCESS_SECRET_KEY,
+                secret: this.accessSecret,
                 expiresIn: '4h',
             }),
-            refreshToken: await bcrypt.hash(await this.jwtService.sign({
+            refreshToken: await bcrypt.hash(this.jwtService.sign({
                 email: teacherMail,
                 id: thisTeacher.teacherID
             }, { 
-                secret: process.env.JWT_REFRESH_SECRET_KEY,
+                secret: this.refreshSecret,
                 expiresIn: '168h'
             }), 10)
         }
-
+        
         await this.teacherRepository.update(thisTeacher.teacherID, {
-            teacherRefreshToken: await bcrypt.hash(tokens.refreshToken, 10),
+            teacherRefreshToken: this.jwtService.sign({
+                email: teacherMail,
+                id: thisTeacher.teacherID
+            }, {
+                secret: this.refreshSecret,
+                expiresIn: '168h'
+            }),
         })
 
         return tokens;

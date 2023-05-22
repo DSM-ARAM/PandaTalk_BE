@@ -1,5 +1,6 @@
 export class DeleteTeacherTokenDto {
-    authorization: string;
+    accesstoken: string;
+    refreshtoken: string;
     accept: string;
     host: string;
     connection: string;
