@@ -4,4 +4,5 @@ export class CreateTeacherDto {
     teacherMail: string;
     teacherPhone: number;
     teacherPW: string;
-  }
+    teacherIsAdmin: boolean;
+}

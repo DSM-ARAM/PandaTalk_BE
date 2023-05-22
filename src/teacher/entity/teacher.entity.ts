@@ -52,4 +52,11 @@ export class Teacher {
         length: 200,
     })
     teacherRefreshToken: string;
+
+    @Column({
+        type: "boolean",
+        nullable: false,
+        default: false
+    })
+    teacherIsAdmin: boolean;
 }

@@ -56,4 +56,18 @@ export class TeacherController {
         else if (token == 'ConflictException') throw new ConflictException('비밀번호가 일치하지 않습니다.');
         else throw new BadRequestException('에러가 발생했습니다.');
     }
+
+    @Delete('signIn')
+    async logOutAccTeacher(@Headers() teacher: DeleteTeacherTokenDto): Promise<Object>{
+        const res = await this.teacherService.LogOutAccTeacher(teacher);
+
+        if (res == 'success') return Object.assign({
+            data: {},
+            statusCode: 204,
+            statusMsg: 'Success',
+        })
+        else if (res == 'NotFoundException') throw new NotFoundException('계정을 찾을 수 없습니다.');
+        else if (res == 'UnauthorizedException') throw new UnauthorizedException('로그인이 필요합니다.');
+        else throw new BadRequestException('에러가 발생했습니다.')
+    }
 }

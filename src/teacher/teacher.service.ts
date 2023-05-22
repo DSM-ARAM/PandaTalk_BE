@@ -44,15 +44,13 @@ export class TeacherService {
             teacherMail: teacher.teacherMail,
             teacherPhone: teacher.teacherPhone,
             teacherPW,
+            teacherIsAdmin: teacher.teacherIsAdmin,
         });
 
         return 'success';
     }
 
-    async deleteAccTeacher(token: DeleteTeacherTokenDto): Promise<string>{
-
-        console.log(token)
-
+    async deleteAccTeacher(token: DeleteTeacherTokenDto): Promise<string> {
         const access: string = token.accesstoken.replace('Bearer ', '');
         const refresh: string = token.refreshtoken.replace('Bearer ', '')
 
@@ -76,7 +74,7 @@ export class TeacherService {
         const teacherID = this.jwtService.decode(access, { complete: true }).payload.id;
 
         const thisTeacher = await this.teacherRepository.findOne({ where: { teacherID } })
-        console.log(thisTeacher, 'hello!');
+
         if (!thisTeacher || thisTeacher == null) return 'NotFoundException';
         
         await this.teacherRepository.remove(thisTeacher);
@@ -123,5 +121,36 @@ export class TeacherService {
 
         return tokens;
         
+    }
+
+    async LogOutAccTeacher(teacher: DeleteTeacherTokenDto): Promise<string> {
+        const access: string = teacher.accesstoken.replace('Bearer ', '');
+        const refresh: string = teacher.refreshtoken.replace('Bearer ', '');
+        
+        if (!this.jwtService.verifyAsync(access, { secret: this.accessSecret })) {
+            if (!this.jwtService.verifyAsync(refresh, { secret: this.refreshSecret })) return 'UnauthroizedException';
+            else {
+                const decrypt = this.jwtService.decode(teacher.refreshtoken, {
+                    complete: true,
+                })
+                
+                this.jwtService.sign({
+                    email: decrypt.payload.email,
+                    id: decrypt.payload.id,
+                }, {
+                    secret: this.accessSecret,
+                    expiresIn: '4h'
+                })
+            }
+        }
+        const teacherID = this.jwtService.decode(access, { complete: true }).payload.id;
+
+        const thisTeacher = await this.teacherRepository.findOne({ where: { teacherID } })
+        
+        if (!thisTeacher || thisTeacher == null) return 'NotFoundException';
+
+        await this.teacherRepository.update(thisTeacher, { teacherRefreshToken: null });
+
+        return 'success';
     }
 }
