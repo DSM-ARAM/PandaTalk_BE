@@ -5,7 +5,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Teacher } from './teacher/entity/teacher.entity';
 import { TeacherController } from './teacher/teacher.controller';
 
-const port = process.env.DB_PORT
 
 @Module({
   imports: [
