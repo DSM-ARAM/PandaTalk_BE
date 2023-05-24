@@ -31,7 +31,6 @@ export class TeacherService {
         const thisTeacher = await this.teacherRepository.findOne({
             where: [
                 { teacherMail: teacher.teacherMail },
-                { teacherPhone: teacher.teacherPhone },
             ]
         })
         if (thisTeacher) return 'ConflictException';
@@ -42,7 +41,6 @@ export class TeacherService {
             teacherName: teacher.teacherName,
             teacherDepartment: teacher.teacherDepartment,
             teacherMail: teacher.teacherMail,
-            teacherPhone: teacher.teacherPhone,
             teacherPW,
             teacherIsAdmin: teacher.teacherIsAdmin,
         });
