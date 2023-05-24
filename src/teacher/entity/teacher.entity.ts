@@ -31,14 +31,6 @@ export class Teacher {
     teacherMail: string;
 
     @Column({
-        type: "int",
-        nullable: false,
-        unique: true,
-        width: 11,
-    })
-    teacherPhone: number;
-
-    @Column({
         type: "varchar",
         nullable: false,
         length: 100,
@@ -52,4 +44,11 @@ export class Teacher {
         length: 200,
     })
     teacherRefreshToken: string;
+
+    @Column({
+        type: "boolean",
+        nullable: false,
+        default: false
+    })
+    teacherIsAdmin: boolean;
 }
