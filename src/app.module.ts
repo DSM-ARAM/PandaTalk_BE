@@ -4,6 +4,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Teacher } from './teacher/entity/teacher.entity';
 import { TeacherController } from './teacher/teacher.controller';
+import { GroupModule } from './group/group.module';
 
 
 @Module({
@@ -27,6 +28,7 @@ import { TeacherController } from './teacher/teacher.controller';
       migrationsTableName: 'migrations',
       autoLoadEntities: true,
     }),
+    GroupModule,
   ],
   controllers: [TeacherController],
   providers: [],
