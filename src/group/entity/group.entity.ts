@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class Group {
@@ -14,10 +14,9 @@ export class Group {
     })
     groupIs: string;
 
-    @Column({
+    @PrimaryColumn({
         type: "varchar",
         nullable: false,
-        unique: true,
     })
     groupName: string;
 
