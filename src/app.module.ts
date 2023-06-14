@@ -1,15 +1,10 @@
 import { Module } from '@nestjs/common';
-import { TeacherModule } from './teacher/teacher.module';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Teacher } from './teacher/entity/teacher.entity';
-import { TeacherController } from './teacher/teacher.controller';
-import { GroupModule } from './group/group.module';
 
 
 @Module({
   imports: [
-    TeacherModule,
     ConfigModule.forRoot({
       cache: true,
       isGlobal: true,
@@ -21,16 +16,15 @@ import { GroupModule } from './group/group.module';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      entities: [Teacher],
+      entities: [],
       synchronize: process.env.NODE_ENV !== 'prod',
       logging: process.env.NODE_ENV !== 'prod',
       migrations: [__dirname + '/**/migrations/*.js'],
       migrationsTableName: 'migrations',
       autoLoadEntities: true,
     }),
-    GroupModule,
   ],
-  controllers: [TeacherController],
+  controllers: [],
   providers: [],
 })
 export class AppModule {}
