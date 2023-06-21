@@ -1,16 +1,17 @@
-import { ConflictException, Injectable, NotFoundException, UseFilters } from '@nestjs/common';
+import { ConflictException, createParamDecorator, Injectable, NotFoundException, UnauthorizedException, UseFilters,  ExecutionContext } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { HttpExceptionFilter } from 'src/http-exception.filter/http-exception.filters';
 import { Repository } from 'typeorm';
 import { authEntity } from './entity/auth.entity';
 import * as bcrypt from 'bcrypt';
 import { userLogDto } from './dto/userLog.dto';
-import { generateAccessTokenDto } from './dto/generateAccessToken.dto';
+import { validateResultDto } from './dto/validateResult.dto';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { InjectRedis } from '@liaoliaots/nestjs-redis';
 import { Redis } from 'ioredis';
 import { userAccDto } from './dto/userAcc.dto';
+import { tokenDto } from './dto/token.dto';
 
 @UseFilters(new HttpExceptionFilter()) // APP_FILTER
 @Injectable()
@@ -28,15 +29,12 @@ export class AuthService {
     /**
      * 액세스 토큰 생성
      * 
-     * REQ : userID, userLogID
+     * REQ : userLogID
      */
-    async generateAccessToken(generateAccessTokenDto: generateAccessTokenDto): Promise<string>{
-        const payload: generateAccessTokenDto = {
-            userID: generateAccessTokenDto.userID,
-            userLogID: generateAccessTokenDto.userLogID
-        }
+    async generateAccessToken(userLogID: string): Promise<string>{
+        const payload = { userLogID }
 
-        const accessToken = this.jwtService.signAsync(payload, {
+        const accessToken = await this.jwtService.sign(payload, {
             secret: this.config.get<string>('process.env.JWT_SECRET_ACCESS')
         });
 
@@ -46,20 +44,58 @@ export class AuthService {
     /** 
      *  리프레시 토큰 생성
      * 
-     *  REQ : userID, userLogID
+     *  REQ : userLogID
      */
-    async generageRefreshToken(generateAccessToken: generateAccessTokenDto): Promise<string>{
-        const payload = {
-            userID: generateAccessToken.userID,
-            userLogID: generateAccessToken.userLogID,
-        }
+    async generageRefreshToken(userLogID: string): Promise<string>{
+        const payload = { userLogID }
         
-        const refreshToken = this.jwtService.signAsync({userID : payload.userID}, {
+        const refreshToken = await this.jwtService.sign(payload, {
             secret: this.config.get<string>('process.env.JWT_SECRET_REFRESH'),
             expiresIn: '1d'
         })
 
         return refreshToken;
+    }
+
+    /**
+     * 액세스토큰 유효성 확인하기
+     * 
+     * REQ : accessToken
+     */
+    async accessValidate(tokenDto: tokenDto): Promise<validateResultDto> {
+        const accessSecret: string = process.env.JWT_SECRET_ACCESS;
+        const thisAccess = await this.jwtService.verify(tokenDto.accesstoken, {
+            secret: this.config.get<string>('process.env.JWT_SECRET_ACCESS')
+        });
+
+        if (!thisAccess) {
+            const thisRefresh = await this.refreshValidate(tokenDto);
+            if (!thisRefresh) {
+                throw new UnauthorizedException(); // 리프레시토큰 없으면 401 에러
+            }
+            const newAccess = await this.generateAccessToken(thisRefresh.userLogID);
+            const thisVerify = this.jwtService.verify(newAccess, { secret: accessSecret });
+            await this.client.set(`${thisVerify.payload.userLogID}AccessToken`, newAccess);
+            
+            return thisVerify;
+        };
+
+        return thisAccess;
+    }
+
+    /**
+     * 리프레시토큰 유효성 확인하기
+     * 
+     */
+    async refreshValidate(tokenDto: tokenDto): Promise<validateResultDto> {
+        const refreshSecret: string = process.env.JWT_SECRET_REFRESH;
+        const thisRefresh = await this.jwtService.verify(tokenDto.refreshtoken, { secret: refreshSecret });
+
+        if (!thisRefresh) {
+            throw new UnauthorizedException();
+        }
+        
+        return thisRefresh;
     }
 
     /**
@@ -80,15 +116,15 @@ export class AuthService {
             throw new ConflictException();
         }
 
-        const accessToken = await this.generateAccessToken({userID: thisUser.userID, userLogID}); // AccessToken 생성
-        const refreshToken = await this.generageRefreshToken({ userID: thisUser.userID, userLogID }); // RefreshToken 생성
+        const accessToken = await this.generateAccessToken(userLogID); // AccessToken 생성
+        const refreshToken = await this.generageRefreshToken(userLogID); // RefreshToken 생성
 
         await this.client.set(`${thisUser.userID}AccessToken`, accessToken); // redis에 accessToken 저장
         await this.client.set(`${thisUser.userID}RefreshToken`, refreshToken); // redis에 refreshToken 저장
 
         const token = {
             accessToken,
-            refreshToken
+            refreshToken,
         }
 
         return token; // accessToken 반환
@@ -116,5 +152,27 @@ export class AuthService {
         })
 
         return thisUser;
+    }
+
+    /**
+     * 로그아웃
+     * 
+     * REQ : accessToken, refreshToken
+     */
+    async logOut(token: tokenDto): Promise<string> { // 헤더가 통으로 들어감,,,
+
+        const userLogID = (await this.accessValidate({
+            accesstoken: token.accesstoken,
+            refreshtoken: token.refreshtoken
+        })).userLogID;
+
+        const thisUser = await this.authEntity.findOneBy({ userLogID }); // 사용자 찾기
+        if (!thisUser) {
+            throw new NotFoundException();
+        }
+
+        await this.client.set(`${thisUser.userID}AccessToken`, null); // 액세스토큰 값 비우기
+
+        return this.client.get(`${thisUser.userID}AccessToken`); // 데이터가 비었는지 확인 용도
     }
 }

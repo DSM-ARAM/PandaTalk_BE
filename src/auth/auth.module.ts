@@ -17,7 +17,7 @@ import { authEntity } from './entity/auth.entity';
           expiresIn: '4h'
         },
         verifyOptions: {
-          complete: true,
+          complete: false,
         }
       })
     })
