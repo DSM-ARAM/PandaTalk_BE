@@ -10,6 +10,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { InjectRedis } from '@liaoliaots/nestjs-redis';
 import { Redis } from 'ioredis';
+import { userAccDto } from './dto/userAcc.dto';
 
 @UseFilters(new HttpExceptionFilter()) // APP_FILTER
 @Injectable()
@@ -91,5 +92,29 @@ export class AuthService {
         }
 
         return token; // accessToken 반환
+    }
+
+    /**
+     * 회원가입
+     * 
+     * REQ : userLogID, userPW, user
+     */
+    async createUserAccount(userAccDto: userAccDto): Promise<object>{
+        const { userLogID, userPW, userName, userDepartment } = userAccDto;
+
+        if (await this.authEntity.findOneBy({ userLogID })) {
+            throw new ConflictException();
+        }
+
+        const hashedUserPW: string = await bcrypt.hash(userPW, 10);
+
+        const thisUser = await this.authEntity.save({
+            userLogID,
+            userPW: hashedUserPW,
+            userName,
+            userDepartment,
+        })
+
+        return thisUser;
     }
 }
