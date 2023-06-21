@@ -5,7 +5,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { authEntity } from './entity/auth.entity';
-import { CacheModule } from '@nestjs/common'
 
 @Module({
   imports: [

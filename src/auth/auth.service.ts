@@ -12,13 +12,13 @@ import { userLogDto } from './dto/userLog.dto';
 export class AuthService {
     constructor(
         @InjectRepository(authEntity) private authEntity: Repository<authEntity>, // REPOSITORY 주입받기
-        private jwtService: JwtService // JWTService 주입받기
+        private accessJwtService: JwtService // accessToken 전용 JWTService 주입받기
     ) {
         this.authEntity = authEntity;
-        this.jwtService = jwtService;
+        this.accessJwtService = accessJwtService;
     }
 
-    async logIn(userLogDto: userLogDto): Promise<any> { // 로그인
+    async logIn(userLogDto: userLogDto): Promise<object> { // 로그인
         const { userLogID, userPW } = userLogDto; // 아이디와 비밀번호 받아오기
 
         const thisUser = await this.authEntity.findOne({ where: {userLogID} }); // 아이디로 해당 유저 찾기
@@ -31,11 +31,21 @@ export class AuthService {
             throw new ConflictException();
         }
 
-        const accessToken = this.jwtService.sign({ // accessToken에 sign하기
+        const accessToken = this.accessJwtService.sign({ // accessToken에 sign하기
             userID: thisUser.userID,
             userLogID: userLogID,
         });
 
-        return accessToken; // accessToken 반환
+        const refreshToken = this.accessJwtService.sign({
+            userID: thisUser.userID,
+        })
+
+
+        const token = {
+            accessToken,
+            refreshToken
+        }
+
+        return token; // accessToken 반환
     }
 }
