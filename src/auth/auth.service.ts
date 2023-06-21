@@ -38,7 +38,7 @@ export class AuthService {
             secret: this.config.get<string>('process.env.JWT_SECRET_ACCESS')
         });
 
-        return accessToken;
+        return (`Bearer ${accessToken}`);
     }
 
     /** 
@@ -54,7 +54,7 @@ export class AuthService {
             expiresIn: '1d'
         })
 
-        return refreshToken;
+        return (`Bearer ${refreshToken}`);
     }
 
     /**
@@ -64,9 +64,8 @@ export class AuthService {
      */
     async accessValidate(tokenDto: tokenDto): Promise<validateResultDto> {
         const accessSecret: string = process.env.JWT_SECRET_ACCESS;
-        const thisAccess = await this.jwtService.verify(tokenDto.accesstoken, {
-            secret: this.config.get<string>('process.env.JWT_SECRET_ACCESS')
-        });
+        const accesstoken: string = tokenDto.accesstoken.replace('Bearer ', '');
+        const thisAccess = await this.jwtService.verify(accesstoken, { secret: accessSecret });
 
         if (!thisAccess) {
             const thisRefresh = await this.refreshValidate(tokenDto);
@@ -89,7 +88,8 @@ export class AuthService {
      */
     async refreshValidate(tokenDto: tokenDto): Promise<validateResultDto> {
         const refreshSecret: string = process.env.JWT_SECRET_REFRESH;
-        const thisRefresh = await this.jwtService.verify(tokenDto.refreshtoken, { secret: refreshSecret });
+        const refreshtoken: string = tokenDto.refreshtoken.replace('Bearer ', '')
+        const thisRefresh = await this.jwtService.verify(refreshtoken, { secret: refreshSecret });
 
         if (!thisRefresh) {
             throw new UnauthorizedException();
