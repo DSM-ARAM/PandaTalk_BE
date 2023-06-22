@@ -1,7 +1,9 @@
-import { Column, Entity, PrimaryGeneratedColumn} from "typeorm";
+import { groupEntity } from "src/people/entity/group.entity";
+import { Column, Entity, ManyToMany, PrimaryGeneratedColumn} from "typeorm";
 
 @Entity()
 export class authEntity{
+    @ManyToMany(() => groupEntity, groupEntity => groupEntity.groupOwner)
     @PrimaryGeneratedColumn({
         type: "integer",
     })

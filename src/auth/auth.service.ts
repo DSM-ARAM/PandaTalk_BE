@@ -1,4 +1,4 @@
-import { ConflictException, createParamDecorator, Injectable, NotFoundException, UnauthorizedException, UseFilters,  ExecutionContext } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException, UnauthorizedException, UseFilters } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { HttpExceptionFilter } from 'src/http-exception.filter/http-exception.filters';
 import { Repository } from 'typeorm';
@@ -31,8 +31,8 @@ export class AuthService {
      * 
      * REQ : userLogID
      */
-    async generateAccessToken(userLogID: string): Promise<string>{
-        const payload = { userLogID }
+    async generateAccessToken(userID:number, userLogID: string): Promise<string>{
+        const payload = { userID ,userLogID }
 
         const accessToken = await this.jwtService.sign(payload, {
             secret: this.config.get<string>('process.env.JWT_SECRET_ACCESS')
@@ -46,8 +46,8 @@ export class AuthService {
      * 
      *  REQ : userLogID
      */
-    async generageRefreshToken(userLogID: string): Promise<string>{
-        const payload = { userLogID }
+    async generageRefreshToken(userID: number): Promise<string>{
+        const payload = { userID }
         
         const refreshToken = await this.jwtService.sign(payload, {
             secret: this.config.get<string>('process.env.JWT_SECRET_REFRESH'),
@@ -62,17 +62,17 @@ export class AuthService {
      * 
      * REQ : accessToken
      */
-    async accessValidate(tokenDto: tokenDto): Promise<validateResultDto> {
-        const accessSecret: string = process.env.JWT_SECRET_ACCESS;
+    async accessValidate(tokenDto: tokenDto): Promise<validateResultDto>{
+        const accessSecret: string = this.config.get<string>('process.env.JWT_SECRET_ACCESS');
         const accesstoken: string = tokenDto.accesstoken.replace('Bearer ', '');
-        const thisAccess = await this.jwtService.verify(accesstoken, { secret: accessSecret });
+        const thisAccess = await this.jwtService.verify(accesstoken, { secret : accessSecret });
 
         if (!thisAccess) {
             const thisRefresh = await this.refreshValidate(tokenDto);
             if (!thisRefresh) {
                 throw new UnauthorizedException(); // 리프레시토큰 없으면 401 에러
             }
-            const newAccess = await this.generateAccessToken(thisRefresh.userLogID);
+            const newAccess = await this.generateAccessToken(thisRefresh.userID, thisRefresh.userLogID);
             const thisVerify = this.jwtService.verify(newAccess, { secret: accessSecret });
             await this.client.set(`${thisVerify.payload.userLogID}AccessToken`, newAccess);
             
@@ -116,8 +116,8 @@ export class AuthService {
             throw new ConflictException();
         }
 
-        const accessToken = await this.generateAccessToken(userLogID); // AccessToken 생성
-        const refreshToken = await this.generageRefreshToken(userLogID); // RefreshToken 생성
+        const accessToken = await this.generateAccessToken(thisUser.userID, userLogID); // AccessToken 생성
+        const refreshToken = await this.generageRefreshToken(thisUser.userID); // RefreshToken 생성
 
         await this.client.set(`${thisUser.userID}AccessToken`, accessToken); // redis에 accessToken 저장
         await this.client.set(`${thisUser.userID}RefreshToken`, refreshToken); // redis에 refreshToken 저장

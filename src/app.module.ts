@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { authEntity } from './auth/entity/auth.entity';
 import { RedisModule } from '@liaoliaots/nestjs-redis'
+import { PeopleModule } from './people/people.module';
 
 const REDIS_PORT: number = Number(process.env.REDIS_PORT);
 
@@ -36,6 +37,7 @@ const REDIS_PORT: number = Number(process.env.REDIS_PORT);
       }
     }),
     AuthModule,
+    PeopleModule,
   ],
   controllers: [],
   providers: [],
