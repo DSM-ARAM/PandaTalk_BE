@@ -1,14 +1,16 @@
 import { groupEntity } from "src/people/entity/group.entity";
-import { Column, Entity, ManyToMany, PrimaryGeneratedColumn} from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn} from "typeorm";
 
 @Entity()
 export class authEntity{
-    @ManyToMany(() => groupEntity, groupEntity => groupEntity.groupOwner)
     @PrimaryGeneratedColumn({
         type: "integer",
     })
     userID: number;
-
+    
+    @OneToMany(() => groupEntity, groupEntity => groupEntity.groupOwner)
+    ownGroups: groupEntity[]
+        
     @Column({
         type: "varchar",
         unique: true,

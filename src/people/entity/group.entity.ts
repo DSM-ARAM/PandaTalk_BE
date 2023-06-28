@@ -1,5 +1,5 @@
 import { authEntity } from "src/auth/entity/auth.entity";
-import { Column, Entity, JoinTable, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, Generated, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
 import { peopleEntity } from "./people.entity";
 
 export enum groupIs{
@@ -9,26 +9,33 @@ export enum groupIs{
 
 @Entity()
 export class groupEntity {
-    @OneToMany(() => groupEntity, groupEntity => groupEntity.groupSuperID)
-    @ManyToOne(() => groupEntity, groupEntity => groupEntity.groupExtendsID)
-    @ManyToMany(() => peopleEntity, peopleEntity => peopleEntity.peopleID)
     @PrimaryGeneratedColumn({
         type: 'integer'
     })
     groupID: number;
 
+    @OneToMany(() => groupEntity, groupEntity => groupEntity.groupSuperID)
+    @Generated()
+    groupSuper: groupEntity;
+
+    @ManyToOne(() => groupEntity, groupEntity => groupEntity.groupExtendsID)
+    @Generated()
+    groupExtends: groupEntity; 
+
+    @ManyToMany(() => peopleEntity, peopleEntity => peopleEntity.peopleID)
+    @Generated()
+    groupPeople: peopleEntity;
+        
     @PrimaryColumn({
         type: 'varchar'
     })
     groupName: string;
 
-    @ManyToOne(() => authEntity, authEntity => authEntity.userID, {
+    @ManyToOne(() => authEntity, groupOwner => groupOwner.ownGroups, {
         cascade: ["update"],
     })
-    @PrimaryColumn({
-        type: 'integer'
-    })
-    groupOwner: number;
+    @JoinColumn()
+    groupOwner: authEntity;
 
     @Column({
         type: 'enum',
@@ -38,15 +45,17 @@ export class groupEntity {
     })
     groupIs: groupIs;
 
-    @ManyToOne(() => groupEntity, groupEntity => groupEntity.groupID)
+    @ManyToOne(() => groupEntity, groupEntity => groupEntity.groupID, { nullable: true })
     @Column({
-        type: 'integer'
+        type: 'integer',
+        nullable: true
     })
     groupSuperID: number;
 
-    @OneToMany(() => groupEntity, groupEntity => groupEntity.groupID)
+    @OneToMany(() => groupEntity, groupEntity => groupEntity.groupID, { nullable: true })
     @Column({
-        type: 'integer'
+        type: 'integer',
+        nullable: true
     })
     groupExtendsID: number;
 }

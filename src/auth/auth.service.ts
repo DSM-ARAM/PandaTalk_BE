@@ -31,8 +31,11 @@ export class AuthService {
      * 
      * REQ : userLogID
      */
-    async generateAccessToken(userID:number, userLogID: string): Promise<string>{
-        const payload = { userID ,userLogID }
+    async generateAccessToken(userID: number, userLogID: string): Promise<string>{
+        const payload = {
+            userID : userID[0],
+            userLogID,
+        }
 
         const accessToken = await this.jwtService.sign(payload, {
             secret: this.config.get<string>('process.env.JWT_SECRET_ACCESS')
@@ -46,8 +49,10 @@ export class AuthService {
      * 
      *  REQ : userLogID
      */
-    async generageRefreshToken(userID: number): Promise<string>{
-        const payload = { userID }
+    async generateRefreshToken(userID: number): Promise<string>{
+        const payload = {
+            userID : userID[0]
+        }
         
         const refreshToken = await this.jwtService.sign(payload, {
             secret: this.config.get<string>('process.env.JWT_SECRET_REFRESH'),
@@ -117,7 +122,7 @@ export class AuthService {
         }
 
         const accessToken = await this.generateAccessToken(thisUser.userID, userLogID); // AccessToken 생성
-        const refreshToken = await this.generageRefreshToken(thisUser.userID); // RefreshToken 생성
+        const refreshToken = await this.generateRefreshToken(thisUser.userID); // RefreshToken 생성
 
         await this.client.set(`${thisUser.userID}AccessToken`, accessToken); // redis에 accessToken 저장
         await this.client.set(`${thisUser.userID}RefreshToken`, refreshToken); // redis에 refreshToken 저장
@@ -149,7 +154,10 @@ export class AuthService {
             userPW: hashedUserPW,
             userName,
             userDepartment,
+            ownGroups: null
         })
+
+        console.log(thisUser)
 
         return thisUser;
     }
