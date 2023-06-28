@@ -1,5 +1,5 @@
-import { Body, Controller, Get, Headers, Post, Query, UseFilters } from '@nestjs/common';
-import { ApiBody, ApiCreatedResponse, ApiHeader, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, Headers, Param, Post, Query, UseFilters } from '@nestjs/common';
+import { ApiBody, ApiCreatedResponse, ApiHeader, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { tokenDto } from 'src/auth/dto/token.dto';
 import { HttpExceptionFilter } from 'src/http-exception.filter/http-exception.filters';
 import { createGroupDto } from './dto/createGroup.dto';
@@ -52,6 +52,25 @@ export class PeopleController {
             data,
             statusCode: 201,
             statusMsg: "그룹을 성공적으로 만들었습니다."
+        })
+    }
+
+    @ApiOperation({ summary: "그룹 삭제하기 API", description: "사용자가 소유한 그룹 삭제하기" })
+    @ApiNoContentResponse({
+        status: 204,
+        description: "그룹을 성공적으로 삭제했습니다."
+    })
+    @ApiHeader({ name: 'accessToken', required: true })
+    @ApiHeader({ name: 'refreshToken', required: true })
+    @ApiParam({ name: 'groupID', type: 'number' })
+    @Delete(':groupID')
+    async deleteGroup(@Headers() tokenDto: tokenDto, @Param() groupID: number): Promise<void> {
+        const data = await this.peopleService.deleteGroup(tokenDto, groupID);
+
+        return Object.assign({
+            data,
+            statusCode: 204,
+            statusMsg: "그룹을 성공적으로 삭제했습니다."
         })
     }
 }

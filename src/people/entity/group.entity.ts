@@ -1,5 +1,5 @@
 import { authEntity } from "src/auth/entity/auth.entity";
-import { Column, Entity, Generated, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, Generated, JoinColumn, ManyToMany, ManyToOne, OneToMany, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
 import { peopleEntity } from "./people.entity";
 
 export enum groupIs{
