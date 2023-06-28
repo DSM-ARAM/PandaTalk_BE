@@ -63,11 +63,14 @@ export class PeopleService {
         const thisUser = await this.authEntity.findOneBy({ userID });
 
         if (!thisUser) throw new UnauthorizedException();
+        if (thisUser.userName != 'admin' && createGroupDto.groupIs == groupIs.c) throw new ForbiddenException();
+        else if (thisUser.userName == 'admin' && createGroupDto.groupIs == groupIs.p) throw new ForbiddenException();
 
         const newGroup = await this.groupEntity.save({
             groupName: createGroupDto.groupName,
             groupIs: createGroupDto.groupIs,
             groupOwner: thisUser,
+            groupOwnerID: thisUser.userID,
             groupExtendsID: createGroupDto.groupExtendsID,
             groupSuperID: createGroupDto.groupSuperID
         });
@@ -90,7 +93,7 @@ export class PeopleService {
 
         if (!thisUser) throw new UnauthorizedException();
 
-        const thisGroup = await this.groupEntity.findOneBy({ groupOwner: thisUser });
+        const thisGroup = await this.groupEntity.findOneBy({ groupID, groupOwner: thisUser });
 
         if (!thisGroup) throw new NotFoundException();
         if (thisGroup.groupOwner != thisUser) throw new ForbiddenException();
@@ -98,5 +101,31 @@ export class PeopleService {
         await this.groupEntity.delete({ groupOwner: thisUser });
 
         return;
+    }
+
+    /**
+     * 구성원 목록 불러오기
+     * 
+     * @param tokenDto
+     * @param groupID
+     * 
+     * @returns groupMemberList
+     */
+    async getGroupMemberList(tokenDto: tokenDto, groupID: number): Promise<object[]> {
+        const { userID } = (await this.authService.accessValidate(tokenDto));
+        const thisUser = await this.authEntity.findOneByOrFail({ userID });
+
+        if (!thisUser) throw new UnauthorizedException();
+
+        const thisGroup = await this.groupEntity.findOneBy({ groupID: groupID });
+
+        if (!thisGroup) throw new NotFoundException();
+        if (thisGroup.groupIs == groupIs.c && thisUser.userName != 'admin') throw new ForbiddenException();
+        if (thisGroup.groupIs == groupIs.p && thisGroup.groupOwnerID != thisUser.userID) throw new ForbiddenException();
+
+        const thisGroupMember = await this.peopleEntity.findBy({ peopleGroupID: thisGroup.groupID })
+        if (thisGroupMember == null) return [];
+
+        return thisGroupMember;
     }
 }

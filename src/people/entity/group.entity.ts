@@ -1,5 +1,5 @@
 import { authEntity } from "src/auth/entity/auth.entity";
-import { Column, Entity, Generated, JoinColumn, ManyToMany, ManyToOne, OneToMany, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, Generated, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
 import { peopleEntity } from "./people.entity";
 
 export enum groupIs{
@@ -18,11 +18,14 @@ export class groupEntity {
     @Generated()
     groupSuper: groupEntity;
 
-    @ManyToOne(() => groupEntity, groupEntity => groupEntity.groupExtendsID)
-    @Generated()
-    groupExtends: groupEntity; 
-
-    @ManyToMany(() => peopleEntity, peopleEntity => peopleEntity.peopleID)
+    @ManyToMany(() => peopleEntity, peopleEntity => peopleEntity.peopleGroup)
+    @JoinTable({
+        name: "peopleMappingGroup",
+        joinColumn: {
+            name: 'groupID',
+            referencedColumnName: 'groupID'
+        },
+    })
     @Generated()
     groupPeople: peopleEntity;
         
@@ -38,6 +41,12 @@ export class groupEntity {
     groupOwner: authEntity;
 
     @Column({
+        type: 'integer',
+        nullable: false
+    })
+    groupOwnerID: number;
+
+    @Column({
         type: 'enum',
         nullable: false,
         default: groupIs.p,
@@ -51,11 +60,4 @@ export class groupEntity {
         nullable: true
     })
     groupSuperID: number;
-
-    @OneToMany(() => groupEntity, groupEntity => groupEntity.groupID, { nullable: true })
-    @Column({
-        type: 'integer',
-        nullable: true
-    })
-    groupExtendsID: number;
 }

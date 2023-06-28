@@ -15,6 +15,22 @@ export class AuthController {
     ) {
         this.authService = authService;
     }
+    @ApiOperation({ summary: "회원가입 API", description: "사용자 계정을 만들고 사용자 DB에 추가" })
+    @ApiCreatedResponse({
+        status: 201,
+         description: '계정 생성에 성공했습니다.',
+    })
+    @ApiBody({ type: userAccDto }) // API의 Body로 userAccDto 받음
+    @Post('signUp') // POST : 회원가입 기능
+    async createAcc(@Body() userAccDto: userAccDto): Promise<void> {
+        const acc = await this.authService.createUserAccount(userAccDto); // 회원가입 기능 함수에 userAccDto 담아 함수 호출
+
+        return Object.assign({
+            data: acc, // 회원가입 함수의 결과를 담음
+            statusCode: 201, // POST 성공 -> 201
+            statusMsg: "계정 생성에 성공했습니다."
+        })
+    }
 
     @ApiOperation({ summary: "로그인 API", description: "사용자 계정에 접속해 accessToken과 refreshToken을 발급" })
     @ApiCreatedResponse({
@@ -30,23 +46,6 @@ export class AuthController {
             data: log, // 로그인 함수의 결과를 담음
             statusCode: 201, // POST 성공 -> 201
             statusMsg: "로그인에 성공했습니다."
-        })
-    }
-
-    @ApiOperation({ summary: "회원가입 API", description: "사용자 계정을 만들고 사용자 DB에 추가" })
-    @ApiCreatedResponse({
-        status: 201,
-         description: '계정 생성에 성공했습니다.',
-    })
-    @ApiBody({ type: userAccDto }) // API의 Body로 userAccDto 받음
-    @Post('signUp') // POST : 회원가입 기능
-    async createAcc(@Body() userAccDto: userAccDto): Promise<void> {
-        const acc = await this.authService.createUserAccount(userAccDto); // 회원가입 기능 함수에 userAccDto 담아 함수 호출
-
-        return Object.assign({
-            data: acc, // 회원가입 함수의 결과를 담음
-            statusCode: 201, // POST 성공 -> 201
-            statusMsg: "계정 생성에 성공했습니다."
         })
     }
 

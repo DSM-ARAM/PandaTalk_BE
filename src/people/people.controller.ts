@@ -60,8 +60,8 @@ export class PeopleController {
         status: 204,
         description: "그룹을 성공적으로 삭제했습니다."
     })
-    @ApiHeader({ name: 'accessToken', required: true })
-    @ApiHeader({ name: 'refreshToken', required: true })
+    @ApiHeader({ name: 'accesstoken', required: true })
+    @ApiHeader({ name: 'refreshtoken', required: true })
     @ApiParam({ name: 'groupID', type: 'number' })
     @Delete(':groupID')
     async deleteGroup(@Headers() tokenDto: tokenDto, @Param() groupID: number): Promise<void> {
@@ -71,6 +71,27 @@ export class PeopleController {
             data,
             statusCode: 204,
             statusMsg: "그룹을 성공적으로 삭제했습니다."
+        })
+    }
+
+    @ApiOperation({ summary: "그룹 멤버 불러오기 API", description: "특정 그룹에 소속된 멤버 확인" })
+    @ApiOkResponse({
+        status: 200,
+        description: "그룹 멤버를 성공적으로 불러왔습니다."
+    })
+    @ApiHeader({ name: 'accesstoken', required: true })
+    @ApiHeader({ name: 'refreshtoken', required: true })
+    @ApiParam({ name: 'groupID', type: 'number' })
+    @Get(':groupID')
+    async getGroupMemberList(@Headers() tokenDto: tokenDto, @Param() groupID: number): Promise<void>{
+        console.log(groupID)
+
+        const data = await this.peopleService.getGroupMemberList(tokenDto, groupID);
+
+        return Object.assign({
+            data,
+            statusCode: 200,
+            statusMsg: "그룹 멤버를 성공적으로 불러왔습니다."
         })
     }
 }

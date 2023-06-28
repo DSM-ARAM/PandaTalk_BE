@@ -33,7 +33,7 @@ export class AuthService {
      */
     async generateAccessToken(userID: number, userLogID: string): Promise<string>{
         const payload = {
-            userID : userID[0],
+            userID : userID,
             userLogID,
         }
 
@@ -51,7 +51,7 @@ export class AuthService {
      */
     async generateRefreshToken(userID: number): Promise<string>{
         const payload = {
-            userID : userID[0]
+            userID : userID
         }
         
         const refreshToken = await this.jwtService.sign(payload, {
@@ -73,6 +73,7 @@ export class AuthService {
         const thisAccess = await this.jwtService.verify(accesstoken, { secret : accessSecret });
 
         if (!thisAccess) {
+            console.log('no access')
             const thisRefresh = await this.refreshValidate(tokenDto);
             if (!thisRefresh) {
                 throw new UnauthorizedException(); // 리프레시토큰 없으면 401 에러
@@ -142,6 +143,7 @@ export class AuthService {
      */
     async createUserAccount(userAccDto: userAccDto): Promise<object>{
         const { userLogID, userPW, userName, userDepartment } = userAccDto;
+        if (userName == 'admin') throw new UnauthorizedException();
 
         if (await this.authEntity.findOneBy({ userLogID })) {
             throw new ConflictException();
@@ -156,8 +158,6 @@ export class AuthService {
             userDepartment,
             ownGroups: null
         })
-
-        console.log(thisUser)
 
         return thisUser;
     }

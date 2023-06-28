@@ -1,4 +1,4 @@
-import { Column, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, JoinTable, ManyToMany, OneToMany, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
 import { groupEntity } from "./group.entity";
 
 export enum peopleIs{
@@ -9,17 +9,30 @@ export enum peopleIs{
 
 @Entity()
 export class peopleEntity{
-    @ManyToMany(() => groupEntity, groupEntity => groupEntity.groupID)
-    @JoinTable()
     @PrimaryGeneratedColumn({
         type: 'integer'
     })
     peopleID: number;
 
+    @PrimaryColumn({
+        type: 'integer',
+    })
+    peopleGroupID: number;
+
+    @ManyToMany(() => groupEntity, groupEntity => groupEntity.groupID)
+    @JoinTable({
+        name: "peopleMappingGroup",
+        joinColumn: {
+            name: 'peopleID',
+            referencedColumnName: 'peopleID'
+        }
+    })
+    peopleGroup: groupEntity;
+
     @Column({
         type: 'enum',
         nullable: false,
-        default: 'student',
+        default: peopleIs.student,
         enum: peopleIs
     })
     peopleIs: peopleIs;
