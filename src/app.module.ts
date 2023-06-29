@@ -6,6 +6,7 @@ import { RedisModule } from '@liaoliaots/nestjs-redis'
 import { PeopleModule } from './people/people.module';
 import { NoticeModule } from './notice/notice.module';
 import { ResultModule } from './result/result.module';
+import { MainModule } from './main/main.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { ResultModule } from './result/result.module';
     PeopleModule,
     NoticeModule,
     ResultModule,
+    MainModule,
   ],
   controllers: [],
   providers: [],
