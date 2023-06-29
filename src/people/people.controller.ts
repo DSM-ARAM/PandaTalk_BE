@@ -113,4 +113,27 @@ export class PeopleController {
             statusMsg: "그룹 멤버를 성공적으로 추가하였습니다."
         })
     }
+
+    @ApiOperation({ summary: "그룹 멤버 개별 추가하기 API", description: "한 명만 멤버 추가" })
+    @ApiCreatedResponse({
+        status: 201,
+        description: "그룹 멤버를 성공적으로 추가하였습니다."
+    })
+    @ApiHeader({ name: 'accesstoken', required: true })
+    @ApiHeader({ name: 'refreshtoken', required: true })
+    @ApiParam({ name: 'groupID', type: 'number' })
+    @ApiBody({ type: peopleDto })
+    @Post('member/:groupID')
+    async addOneMemberIntoGroup(
+        @Headers() tokenDto: tokenDto,
+        @Param('groupID') groupID: number,
+        @Body() peopleDto: peopleDto): Promise<void> {
+        const data = await this.peopleService.addOneGroupMember(tokenDto, groupID, peopleDto);
+        
+        return Object.assign({
+            data,
+            statusCode: 201,
+            statusMsg: "그룹 멤버를 성공적으로 추가하였습니다."
+        })
+    }
 }

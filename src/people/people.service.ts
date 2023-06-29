@@ -168,9 +168,45 @@ export class PeopleService {
                 peoplePhoneNumber: people.peoplePhoneNumber,
                 peopleName: people.peopleName,
             })
-            arr.push(people.peopleGroupID)
+            arr.push(people.peopleName)
         })
 
         return arr;
+    }
+
+    /**
+     * 구성원 개별 등록
+     * 
+     * @param tokenDto
+     * @param groupID
+     * 
+     * @body peopleDto
+     * 
+     * @returns 
+     */
+    async addOneGroupMember(tokenDto: tokenDto, groupID: number, peopleDto: peopleDto): Promise<object> {
+        const { userID } = await this.authService.accessValidate(tokenDto);
+
+        const thisUser = await this.authEntity.findOneBy({ userID });
+
+        if (!thisUser) throw new UnauthorizedException();
+
+        const thisGroup = await this.groupEntity.findOneBy({ groupID });
+
+        console.log(thisGroup, thisUser)
+
+        if (!thisGroup) throw new NotFoundException();
+        if (thisGroup.groupOwnerID != thisUser.userID) throw new ConflictException();
+
+        const thisPeople = await this.peopleEntity.save({
+            peopleGroupID: groupID,
+            peopleIs: peopleDto.peopleIs,
+            peopleSchoolNumber: peopleDto.peopleSchoolNumber,
+            peopleDepartment: peopleDto.peopleDepartment,
+            peoplePhoneNumber: peopleDto.peoplePhoneNumber,
+            peopleName: peopleDto.peopleName
+        })
+
+        return thisPeople;
     }
 }
