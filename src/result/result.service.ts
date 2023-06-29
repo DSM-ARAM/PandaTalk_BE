@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthService } from 'src/auth/auth.service';
 import { tokenDto } from 'src/auth/dto/token.dto';
@@ -55,5 +55,27 @@ export class ResultService {
         })
 
         return thisNotice;
+    }
+
+    /**
+     * 결과 상세 조회
+     * 
+     * @param tokenDto
+     * @param noticeID
+     * 
+     * @returns noticeList
+     */
+    async getMoreInfoNotice(tokenDto: tokenDto, noticeID: number): Promise<object> {
+        const { userID } = await this.authService.accessValidate(tokenDto);
+
+        const thisUser = await this.authEntity.findOneByOrFail({ userID });
+
+        if (!thisUser) throw new UnauthorizedException();
+
+        const thisNoticeMoreInfo = await this.noticeEntity.findOneByOrFail({ noticeID });
+
+        if (!thisNoticeMoreInfo) throw new NotFoundException();
+
+        return thisNoticeMoreInfo;
     }
 }
