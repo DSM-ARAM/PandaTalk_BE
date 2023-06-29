@@ -68,12 +68,13 @@ export class AuthService {
      * REQ : accessToken
      */
     async accessValidate(tokenDto: tokenDto): Promise<validateResultDto>{
+        if (!tokenDto.accesstoken) throw new UnauthorizedException();
+
         const accessSecret: string = this.config.get<string>('process.env.JWT_SECRET_ACCESS');
         const accesstoken: string = tokenDto.accesstoken.replace('Bearer ', '');
         const thisAccess = await this.jwtService.verify(accesstoken, { secret : accessSecret });
 
         if (!thisAccess) {
-            console.log('no access')
             const thisRefresh = await this.refreshValidate(tokenDto);
             if (!thisRefresh) {
                 throw new UnauthorizedException(); // 리프레시토큰 없으면 401 에러
@@ -93,6 +94,8 @@ export class AuthService {
      * 
      */
     async refreshValidate(tokenDto: tokenDto): Promise<validateResultDto> {
+        if (!tokenDto.refreshtoken) throw new UnauthorizedException();
+        
         const refreshSecret: string = process.env.JWT_SECRET_REFRESH;
         const refreshtoken: string = tokenDto.refreshtoken.replace('Bearer ', '')
         const thisRefresh = await this.jwtService.verify(refreshtoken, { secret: refreshSecret });

@@ -4,6 +4,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { RedisModule } from '@liaoliaots/nestjs-redis'
 import { PeopleModule } from './people/people.module';
+import { NoticeModule } from './notice/notice.module';
+import { ResultModule } from './result/result.module';
 
 @Module({
   imports: [
@@ -35,6 +37,8 @@ import { PeopleModule } from './people/people.module';
     }),
     AuthModule,
     PeopleModule,
+    NoticeModule,
+    ResultModule,
   ],
   controllers: [],
   providers: [],
