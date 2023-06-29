@@ -182,7 +182,7 @@ export class PeopleService {
      * 
      * @body peopleDto
      * 
-     * @returns 
+     * @returns addedPeople
      */
     async addOneGroupMember(tokenDto: tokenDto, groupID: number, peopleDto: peopleDto): Promise<object> {
         const { userID } = await this.authService.accessValidate(tokenDto);
@@ -192,8 +192,6 @@ export class PeopleService {
         if (!thisUser) throw new UnauthorizedException();
 
         const thisGroup = await this.groupEntity.findOneBy({ groupID });
-
-        console.log(thisGroup, thisUser)
 
         if (!thisGroup) throw new NotFoundException();
         if (thisGroup.groupOwnerID != thisUser.userID) throw new ConflictException();
@@ -208,5 +206,32 @@ export class PeopleService {
         })
 
         return thisPeople;
+    }
+
+    /**
+     * 구성원 삭제
+     * 
+     * @param tokenDto
+     * @param groupID
+     * 
+     * @returns No content
+     */
+    async deleteGroupMember(tokenDto: tokenDto, groupID: number, peopleIDList: number[]): Promise<object> {
+        const { userID } = await this.authService.accessValidate(tokenDto);
+
+        const thisUser = await this.authEntity.findOneBy({ userID });
+
+        if (!thisUser) throw new UnauthorizedException();
+        const arr = []
+
+        Array.from(peopleIDList).forEach(async peopleID => {
+            await this.peopleEntity.delete({
+                peopleID,
+                peopleGroupID: groupID
+            })
+            arr.push(peopleID)
+        })
+
+        return arr;
     }
 }

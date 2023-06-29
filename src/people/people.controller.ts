@@ -136,4 +136,27 @@ export class PeopleController {
             statusMsg: "그룹 멤버를 성공적으로 추가하였습니다."
         })
     }
+
+    @ApiOperation({ summary: "그룹에서 멤버 삭제 API", description: "특정 그룹에서 특정 멤버 삭제" })
+    @ApiNoContentResponse({
+        status: 204,
+        description: "그룹 멤버를 성공적으로 삭제하였습니다."
+    })
+    @ApiHeader({ name: 'accesstoken', required: true })
+    @ApiHeader({ name: 'refreshtoken', required: true })
+    @ApiParam({ name: 'groupID', type: 'number' })
+    @ApiBody({ type: 'number[]' })
+    @Delete('member/:groupID')
+    async deleteMemberOnGroup(
+        @Headers() tokenDto: tokenDto,
+        @Param('groupID') groupID: number,
+        @Body('peopleIDList') peopleIDList: number[]) {
+        const data = await this.peopleService.deleteGroupMember(tokenDto, groupID, peopleIDList);
+
+        return Object.assign({
+            data,
+            statusCode: 204,
+            statusMsg: "그룹 멤버를 성공적으로 삭제하였습니다."
+        })
+    }
 }
