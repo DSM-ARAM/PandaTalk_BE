@@ -6,6 +6,7 @@ import { authEntity } from 'src/auth/entity/auth.entity';
 import { HttpExceptionFilter } from 'src/http-exception.filter/http-exception.filters';
 import { Repository } from 'typeorm';
 import { createGroupDto } from './dto/createGroup.dto';
+import { peopleDto } from './dto/people.dto';
 import { groupEntity, groupIs } from './entity/group.entity';
 import { peopleEntity } from './entity/people.entity';
 
@@ -28,7 +29,9 @@ export class PeopleService {
      * @returns entityObject(groupID, groupName)
      */
     async getGroupList(tokenDto: tokenDto, group: groupIs): Promise<object> {
-        const thisUser = await this.authService.accessValidate(tokenDto)
+        const { userID } = await this.authService.accessValidate(tokenDto);
+
+        const thisUser = await this.authEntity.findOneByOrFail({ userID });
 
         if (!thisUser) throw new UnauthorizedException();
 
@@ -63,15 +66,26 @@ export class PeopleService {
         const thisUser = await this.authEntity.findOneBy({ userID });
 
         if (!thisUser) throw new UnauthorizedException();
+
         if (thisUser.userName != 'admin' && createGroupDto.groupIs == groupIs.c) throw new ForbiddenException();
         else if (thisUser.userName == 'admin' && createGroupDto.groupIs == groupIs.p) throw new ForbiddenException();
+
+        const thisGroup = await this.groupEntity.findOneBy({
+            groupName: createGroupDto.groupName,
+            groupOwner: thisUser
+        })
+
+        console.log(thisGroup)
+
+        if (thisGroup) throw new ConflictException();
+
+
 
         const newGroup = await this.groupEntity.save({
             groupName: createGroupDto.groupName,
             groupIs: createGroupDto.groupIs,
             groupOwner: thisUser,
             groupOwnerID: thisUser.userID,
-            groupExtendsID: createGroupDto.groupExtendsID,
             groupSuperID: createGroupDto.groupSuperID
         });
 
@@ -127,5 +141,36 @@ export class PeopleService {
         if (thisGroupMember == null) return [];
 
         return thisGroupMember;
+    }
+
+    /**
+     * 구성원 단체 등록
+     * 
+     * @param tokenDto
+     * @param peopleDto
+     * 
+     * @returns OK
+     */
+    async addPeopleIntoGroup(tokenDto: tokenDto, peopleDto: peopleDto[]): Promise<object>{
+        const { userID } = await this.authService.accessValidate(tokenDto);
+        const thisUser = await this.authEntity.findOneByOrFail({ userID });
+
+        if (!thisUser) throw new UnauthorizedException();
+
+        const arr = [];
+
+        Array.from(peopleDto).forEach(async (people) => {
+            await this.peopleEntity.save({
+                peopleGroupID: people.peopleGroupID,
+                peopleIs: people.peopleIs,
+                peopleSchoolNumber: people.peopleSchoolNumber,
+                peopleDepartment: people.peopleDepartment,
+                peoplePhoneNumber: people.peoplePhoneNumber,
+                peopleName: people.peopleName,
+            })
+            arr.push(people.peopleGroupID)
+        })
+
+        return arr;
     }
 }

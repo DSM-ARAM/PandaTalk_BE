@@ -3,6 +3,7 @@ import { ApiBody, ApiCreatedResponse, ApiHeader, ApiNoContentResponse, ApiOkResp
 import { tokenDto } from 'src/auth/dto/token.dto';
 import { HttpExceptionFilter } from 'src/http-exception.filter/http-exception.filters';
 import { createGroupDto } from './dto/createGroup.dto';
+import { peopleDto } from './dto/people.dto';
 import { groupIs } from './entity/group.entity';
 import { PeopleService } from './people.service';
 
@@ -82,16 +83,34 @@ export class PeopleController {
     @ApiHeader({ name: 'accesstoken', required: true })
     @ApiHeader({ name: 'refreshtoken', required: true })
     @ApiParam({ name: 'groupID', type: 'number' })
-    @Get(':groupID')
+    @Get('member/:groupID')
     async getGroupMemberList(@Headers() tokenDto: tokenDto, @Param() groupID: number): Promise<void>{
-        console.log(groupID)
-
         const data = await this.peopleService.getGroupMemberList(tokenDto, groupID);
 
         return Object.assign({
             data,
             statusCode: 200,
             statusMsg: "그룹 멤버를 성공적으로 불러왔습니다."
+        })
+    }
+
+    @ApiOperation({ summary: "그룹 멤버 추가하기 API", description: "특정 그룹에 멤버 추가" })
+    @ApiCreatedResponse({
+        status: 201,
+        description: "그룹 멤버를 성공적으로 추가하였습니다."
+    })
+    @ApiHeader({ name: 'accesstoken', required: true })
+    @ApiHeader({ name: 'refreshtoken', required: true })
+    @ApiParam({ name: 'groupID', type: 'number' })
+    @ApiBody({ type: [peopleDto] })
+    @Post('member')
+    async add(@Headers() tokenDto: tokenDto, @Body('peopleDto') peopleDto: peopleDto[]): Promise<void>{
+        const data = await this.peopleService.addPeopleIntoGroup(tokenDto, peopleDto);
+
+        return Object.assign({
+            data,
+            statusCode: 201,
+            statusMsg: "그룹 멤버를 성공적으로 추가하였습니다."
         })
     }
 }
