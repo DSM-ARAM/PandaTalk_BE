@@ -73,9 +73,13 @@ export class ResultService {
         if (!thisUser) throw new UnauthorizedException();
 
         const thisNoticeMoreInfo = await this.noticeEntity.findOneByOrFail({ noticeID });
+        const thisAdditional = await this.additionalEntity.findBy({ notice: thisNoticeMoreInfo });
 
         if (!thisNoticeMoreInfo) throw new NotFoundException();
 
-        return thisNoticeMoreInfo;
+        return {
+            notice: thisNoticeMoreInfo,
+            additionalFile: thisAdditional,
+        };
     }
 }
