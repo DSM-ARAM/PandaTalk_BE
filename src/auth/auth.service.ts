@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException, UnauthorizedException, UseFilters } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable, NotFoundException, UnauthorizedException, UseFilters } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { HttpExceptionFilter } from 'src/http-exception.filter/http-exception.filters';
 import { Repository } from 'typeorm';
@@ -11,7 +11,6 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRedis } from '@liaoliaots/nestjs-redis';
 import { Redis } from 'ioredis';
 import { userAccDto } from './dto/userAcc.dto';
-import { tokenDto } from './dto/token.dto';
 
 @UseFilters(new HttpExceptionFilter()) // APP_FILTER
 @Injectable()
@@ -67,24 +66,13 @@ export class AuthService {
      * 
      * REQ : accessToken
      */
-    async accessValidate(tokenDto: tokenDto): Promise<validateResultDto>{
-        if (!tokenDto.accesstoken) throw new UnauthorizedException();
-
+    async accessValidate(accesstoken: string): Promise<validateResultDto>{
         const accessSecret: string = this.config.get<string>('process.env.JWT_SECRET_ACCESS');
-        const accesstoken: string = tokenDto.accesstoken.replace('Bearer ', '');
-        const thisAccess = await this.jwtService.verify(accesstoken, { secret : accessSecret });
+        console.log(accesstoken)
+        const access: string = accesstoken.split(' ')[1];
+        const thisAccess = await this.jwtService.verify(access, { secret : accessSecret });
 
-        if (!thisAccess) {
-            const thisRefresh = await this.refreshValidate(tokenDto);
-            if (!thisRefresh) {
-                throw new UnauthorizedException(); // 리프레시토큰 없으면 401 에러
-            }
-            const newAccess = await this.generateAccessToken(thisRefresh.userID, thisRefresh.userLogID);
-            const thisVerify = this.jwtService.verify(newAccess, { secret: accessSecret });
-            await this.client.set(`${thisVerify.payload.userLogID}AccessToken`, newAccess);
-            
-            return thisVerify;
-        };
+        if (!thisAccess) return null;
 
         return thisAccess;
     }
@@ -93,16 +81,14 @@ export class AuthService {
      * 리프레시토큰 유효성 확인하기
      * 
      */
-    async refreshValidate(tokenDto: tokenDto): Promise<validateResultDto> {
-        if (!tokenDto.refreshtoken) throw new UnauthorizedException();
+    async refreshValidate(refreshtoken: string): Promise<validateResultDto> {
+        if (!refreshtoken) throw new UnauthorizedException();
         
         const refreshSecret: string = process.env.JWT_SECRET_REFRESH;
-        const refreshtoken: string = tokenDto.refreshtoken.replace('Bearer ', '')
-        const thisRefresh = await this.jwtService.verify(refreshtoken, { secret: refreshSecret });
+        const refresh: string = refreshtoken.replace('Bearer ', '')
+        const thisRefresh = await this.jwtService.verify(refresh, { secret: refreshSecret });
 
-        if (!thisRefresh) {
-            throw new UnauthorizedException();
-        }
+        if (!thisRefresh) return null;
         
         return thisRefresh;
     }
@@ -165,17 +151,34 @@ export class AuthService {
         return thisUser;
     }
 
+    async createAdminAccount(userAccDto: userAccDto): Promise<object>{
+        const { userLogID, userPW, userName, userDepartment } = userAccDto;
+
+        if (await this.authEntity.findOneBy({ userLogID })) {
+            throw new ConflictException();
+        }
+
+        const hashedUserPW: string = await bcrypt.hash(userPW, 10);
+
+        const thisUser = await this.authEntity.save({
+            userLogID,
+            userPW: hashedUserPW,
+            userName,
+            userDepartment,
+            ownGroups: null
+        })
+
+        return thisUser;
+    }
+
     /**
      * 로그아웃
      * 
      * REQ : accessToken, refreshToken
      */
-    async logOut(token: tokenDto): Promise<string> { // 헤더가 통으로 들어감,,,
+    async logOut(accesstoken: string): Promise<string> { // 헤더가 통으로 들어감,,,
 
-        const userLogID = (await this.accessValidate({
-            accesstoken: token.accesstoken,
-            refreshtoken: token.refreshtoken
-        })).userLogID;
+        const userLogID = (await this.accessValidate(accesstoken)).userLogID;
 
         const thisUser = await this.authEntity.findOneBy({ userLogID }); // 사용자 찾기
         if (!thisUser) {

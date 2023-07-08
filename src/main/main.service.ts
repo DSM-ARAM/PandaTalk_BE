@@ -1,9 +1,10 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthService } from 'src/auth/auth.service';
-import { tokenDto } from 'src/auth/dto/token.dto';
+import { validateDto } from 'src/auth/dto/validate.dto';
 import { authEntity } from 'src/auth/entity/auth.entity';
-import { noticeEntity } from 'src/notice/entity/notice.entity';
+import { noticeDto } from 'src/notice/dto/notice.dto';
+import { noticeEntity, noticeStat } from 'src/notice/entity/notice.entity';
 import { Repository } from 'typeorm';
 
 @Injectable()
@@ -20,8 +21,8 @@ export class MainService {
      * 
      * @returns recentlyNoticeList, myNoticeList
      */
-    async getMainPage(tokenDto: tokenDto): Promise<object> {
-        const { userID } = await this.authService.accessValidate(tokenDto);
+    async getMainPage(accesstoken: string): Promise<object> {
+        const { userID } = await this.authService.accessValidate(accesstoken);
 
         const thisUser = await this.authEntity.findOneBy({ userID });
 
@@ -45,14 +46,43 @@ export class MainService {
         })
 
         return {
-            user: {
-                userName: thisUser.userName,
-                userDepartment: thisUser.userDepartment
-            },
-            notice: {
-                recently: recentlyNoticeList,
-                my: myNoticeList
-            }
+            recently: recentlyNoticeList,
+            my: myNoticeList
         }
+    }
+
+    async getHeader(accesstoken: string): Promise<object> {
+        const { userID } = await this.authService.accessValidate(accesstoken);
+
+        const thisUser = await this.authEntity.findOne({ 
+            where: { userID },
+            select: ['userID', 'userName', 'userDepartment']
+         });
+
+        if (!thisUser) throw new UnauthorizedException();
+
+        return thisUser;
+    }
+
+    async Board(accesstoken: string, noticeDto: noticeDto) {
+        const { userID } = await this.authService.accessValidate(accesstoken);
+
+        const thisUser = await this.authEntity.findOneBy({ userID });
+
+        if (!thisUser) throw new UnauthorizedException();
+
+        if (noticeDto.noticeStat != noticeStat.b || noticeStat.c ) throw new ConflictException();
+
+        const newNotice = await this.noticeEntity.save({
+            noticeHead: noticeDto.noticeHead,
+            noticeContent: noticeDto.noticeContent,
+            noticeBy: noticeDto.noticeBy,
+            noticeStat: noticeDto.noticeStat,
+            noticeFor: noticeDto.noticeFor,
+            noticeChecked: noticeDto.noticeChecked,
+            createAt: noticeDto.createdAt,
+        })
+
+        return newNotice;
     }
 }

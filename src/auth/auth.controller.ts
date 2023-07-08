@@ -1,10 +1,9 @@
-import { Body, Controller, Delete, Header, Headers, Post, UseFilters } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Header, Headers, Post, UseFilters } from '@nestjs/common';
 import { HttpExceptionFilter } from 'src/http-exception.filter/http-exception.filters';
 import { AuthService } from './auth.service';
 import { userLogDto } from './dto/userLog.dto';
 import { ApiBody, ApiCreatedResponse, ApiHeader, ApiNoContentResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { userAccDto } from './dto/userAcc.dto';
-import { tokenDto } from './dto/token.dto';
 
 @ApiTags('사용자 계정 조작 API')
 @UseFilters(new HttpExceptionFilter())
@@ -55,10 +54,9 @@ export class AuthController {
         description: "로그아웃에 성공했습니다.",
     })
     @ApiHeader({ name: 'accesstoken', required: true }) // accesstoken 필수
-    @ApiHeader({ name: 'refreshtoken', required: true }) // refreshtoken 필수
     @Delete() // DELETE : 로그아웃 기능
-    async logOut(@Headers() tokenDto: tokenDto): Promise<void> { // 헤더 전달
-        const out = await this.authService.logOut(tokenDto); // 로그아웃 기능 함수에 헤더 담아 호출
+    async logOut(@Headers('authorization') accesstoken: string): Promise<void> { // 헤더 전달
+        const out = await this.authService.logOut(accesstoken); // 로그아웃 기능 함수에 헤더 담아 호출
 
         return Object.assign({
             data: out, // 빈 결과
@@ -66,4 +64,17 @@ export class AuthController {
             statusMsg: "로그아웃에 성공했습니다."
         })
     }
+
+    @Post('ADMIN')
+    async createAdminAcc(@Body() userAccDto: userAccDto): Promise<void>{
+        const data = await this.authService.createAdminAccount(userAccDto);
+
+        return Object.assign({
+            data,
+            statusCode: 201,
+            statusMsg: "관리자 계정 생성 성공"
+        })
+    }
+
+
 }

@@ -19,16 +19,15 @@ export class ResultController {
         description: "발송 결과 조회에 성공했습니다."
     })
     @ApiHeader({ name: 'accesstoken', required: true })
-    @ApiHeader({ name: 'refreshtoken', required: true })
     @ApiQuery({ name: 'cal', required: true })
     @ApiQuery({ name: 'pgNum', required: true })
     @Get('?')
     async getNoticeResult(
-        @Headers() tokenDto: tokenDto,
+        @Headers('authorization') accesstoken: string,
         @Query('cal') cal: string,
         @Query('pgNum') pgNum: number
     ): Promise<void> {
-        const data = await this.resultService.getNoticeResult(tokenDto, cal, pgNum);
+        const data = await this.resultService.getNoticeResult(accesstoken, cal, pgNum);
 
         return Object.assign({
             data,
@@ -43,11 +42,10 @@ export class ResultController {
         description: "발송 결과 상세 조회에 성공했습니다."
     })
     @ApiHeader({ name: 'accesstoken', required: true })
-    @ApiHeader({ name: 'refreshtoken', required: true })
     @ApiParam({ name: 'noticeID', type: 'number' })
     @Get(':noticeID')
-    async getMoreInfoNotice(@Headers() tokenDto: tokenDto, @Param('noticeID') noticeID: number): Promise<void>{
-        const data = await this.resultService.getMoreInfoNotice(tokenDto, noticeID);
+    async getMoreInfoNotice(@Headers('authorization') accesstoken: string, @Param('noticeID') noticeID: number): Promise<void>{
+        const data = await this.resultService.getMoreInfoNotice(accesstoken, noticeID);
 
         return Object.assign({
             data,

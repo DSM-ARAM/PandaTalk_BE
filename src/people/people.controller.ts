@@ -26,10 +26,10 @@ export class PeopleController {
     @ApiHeader({ name: 'refreshtoken', required: true })
     @Get('group?')
     async getGroupList(
-        @Headers() tokenDto: tokenDto,
+        @Headers() accesstoken: string,
         @Query('group') group: groupIs,
     ): Promise<void> {
-        const data = await this.peopleService.getGroupList(tokenDto, group);
+        const data = await this.peopleService.getGroupList(accesstoken, group);
         return Object.assign({
             data,
             statusCode: 200,
@@ -46,8 +46,8 @@ export class PeopleController {
     @ApiHeader({ name: 'refreshtoken', required: true })
     @ApiBody({ type: createGroupDto })
     @Post('new')
-    async createGroup(@Headers() tokenDto: tokenDto, @Body() createGroupDto: createGroupDto): Promise<void>{
-        const data = await this.peopleService.createGroup(tokenDto, createGroupDto);
+    async createGroup(@Headers() accesstoken: string, @Body() createGroupDto: createGroupDto): Promise<void>{
+        const data = await this.peopleService.createGroup(accesstoken, createGroupDto);
 
         return Object.assign({
             data,
@@ -65,8 +65,8 @@ export class PeopleController {
     @ApiHeader({ name: 'refreshtoken', required: true })
     @ApiParam({ name: 'groupID', type: 'number' })
     @Delete(':groupID')
-    async deleteGroup(@Headers() tokenDto: tokenDto, @Param() groupID: number): Promise<void> {
-        const data = await this.peopleService.deleteGroup(tokenDto, groupID);
+    async deleteGroup(@Headers() accesstoken: string, @Param() groupID: number): Promise<void> {
+        const data = await this.peopleService.deleteGroup(accesstoken, groupID);
 
         return Object.assign({
             data,
@@ -84,8 +84,8 @@ export class PeopleController {
     @ApiHeader({ name: 'refreshtoken', required: true })
     @ApiParam({ name: 'groupID', type: 'number' })
     @Get('member/:groupID')
-    async getGroupMemberList(@Headers() tokenDto: tokenDto, @Param() groupID: number): Promise<void>{
-        const data = await this.peopleService.getGroupMemberList(tokenDto, groupID);
+    async getGroupMemberList(@Headers() accesstoken: string, @Param() groupID: number): Promise<void>{
+        const data = await this.peopleService.getGroupMemberList(accesstoken, groupID);
 
         return Object.assign({
             data,
@@ -104,8 +104,8 @@ export class PeopleController {
     @ApiParam({ name: 'groupID', type: 'number' })
     @ApiBody({ type: [peopleDto] })
     @Post('member')
-    async add(@Headers() tokenDto: tokenDto, @Body('peopleDto') peopleDto: peopleDto[]): Promise<void>{
-        const data = await this.peopleService.addPeopleIntoGroup(tokenDto, peopleDto);
+    async add(@Headers() accesstoken: string, @Body('peopleDto') peopleDto: peopleDto[]): Promise<void>{
+        const data = await this.peopleService.addPeopleIntoGroup(accesstoken, peopleDto);
 
         return Object.assign({
             data,
@@ -125,10 +125,10 @@ export class PeopleController {
     @ApiBody({ type: peopleDto })
     @Post('member/:groupID')
     async addOneMemberIntoGroup(
-        @Headers() tokenDto: tokenDto,
+        @Headers() accesstoken: string,
         @Param('groupID') groupID: number,
         @Body() peopleDto: peopleDto): Promise<void> {
-        const data = await this.peopleService.addOneGroupMember(tokenDto, groupID, peopleDto);
+        const data = await this.peopleService.addOneGroupMember(accesstoken, groupID, peopleDto);
         
         return Object.assign({
             data,
@@ -143,15 +143,14 @@ export class PeopleController {
         description: "그룹 멤버를 성공적으로 삭제하였습니다."
     })
     @ApiHeader({ name: 'accesstoken', required: true })
-    @ApiHeader({ name: 'refreshtoken', required: true })
     @ApiParam({ name: 'groupID', type: 'number' })
     @ApiBody({ type: 'number[]' })
     @Delete('member/:groupID')
     async deleteMemberOnGroup(
-        @Headers() tokenDto: tokenDto,
+        @Headers('authorization') accesstoken: string,
         @Param('groupID') groupID: number,
         @Body('peopleIDList') peopleIDList: number[]) {
-        const data = await this.peopleService.deleteGroupMember(tokenDto, groupID, peopleIDList);
+        const data = await this.peopleService.deleteGroupMember(accesstoken, groupID, peopleIDList);
 
         return Object.assign({
             data,

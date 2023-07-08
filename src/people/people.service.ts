@@ -28,8 +28,8 @@ export class PeopleService {
      * @param group 
      * @returns entityObject(groupID, groupName)
      */
-    async getGroupList(tokenDto: tokenDto, group: groupIs): Promise<object> {
-        const { userID } = await this.authService.accessValidate(tokenDto);
+    async getGroupList(accesstoken: string, group: groupIs): Promise<object> {
+        const { userID } = await this.authService.accessValidate(accesstoken);
 
         const thisUser = await this.authEntity.findOneByOrFail({ userID });
 
@@ -60,8 +60,8 @@ export class PeopleService {
      *  @param createGroupDto
      *  @returns newGroup
      */
-    async createGroup(tokenDto: tokenDto, createGroupDto: createGroupDto): Promise<object>{
-        const userID = (await this.authService.accessValidate(tokenDto)).userID;
+    async createGroup(accesstoken: string, createGroupDto: createGroupDto): Promise<object>{
+        const userID = (await this.authService.accessValidate(accesstoken)).userID;
 
         const thisUser = await this.authEntity.findOneBy({ userID });
 
@@ -100,8 +100,8 @@ export class PeopleService {
      * 
      * @returns null
      */
-    async deleteGroup(tokenDto: tokenDto, groupID: number): Promise<void> {
-        const userID = (await this.authService.accessValidate(tokenDto)).userID;
+    async deleteGroup(accesstoken: string, groupID: number): Promise<void> {
+        const userID = (await this.authService.accessValidate(accesstoken)).userID;
 
         const thisUser = await this.authEntity.findOneBy({ userID });
 
@@ -125,8 +125,8 @@ export class PeopleService {
      * 
      * @returns groupMemberList
      */
-    async getGroupMemberList(tokenDto: tokenDto, groupID: number): Promise<object[]> {
-        const { userID } = (await this.authService.accessValidate(tokenDto));
+    async getGroupMemberList(accesstoken: string, groupID: number): Promise<object[]> {
+        const { userID } = (await this.authService.accessValidate(accesstoken));
         const thisUser = await this.authEntity.findOneByOrFail({ userID });
 
         if (!thisUser) throw new UnauthorizedException();
@@ -151,8 +151,8 @@ export class PeopleService {
      * 
      * @returns OK
      */
-    async addPeopleIntoGroup(tokenDto: tokenDto, peopleDto: peopleDto[]): Promise<object>{
-        const { userID } = await this.authService.accessValidate(tokenDto);
+    async addPeopleIntoGroup(accesstoken: string, peopleDto: peopleDto[]): Promise<object>{
+        const { userID } = await this.authService.accessValidate(accesstoken);
         const thisUser = await this.authEntity.findOneByOrFail({ userID });
 
         if (!thisUser) throw new UnauthorizedException();
@@ -184,8 +184,8 @@ export class PeopleService {
      * 
      * @returns addedPeople
      */
-    async addOneGroupMember(tokenDto: tokenDto, groupID: number, peopleDto: peopleDto): Promise<object> {
-        const { userID } = await this.authService.accessValidate(tokenDto);
+    async addOneGroupMember(accesstoken: string, groupID: number, peopleDto: peopleDto): Promise<object> {
+        const { userID } = await this.authService.accessValidate(accesstoken);
 
         const thisUser = await this.authEntity.findOneBy({ userID });
 
@@ -216,8 +216,8 @@ export class PeopleService {
      * 
      * @returns No content
      */
-    async deleteGroupMember(tokenDto: tokenDto, groupID: number, peopleIDList: number[]): Promise<object> {
-        const { userID } = await this.authService.accessValidate(tokenDto);
+    async deleteGroupMember(accesstoken: string, groupID: number, peopleIDList: number[]): Promise<object> {
+        const { userID } = await this.authService.accessValidate(accesstoken);
 
         const thisUser = await this.authEntity.findOneBy({ userID });
 

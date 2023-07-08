@@ -31,8 +31,8 @@ export class ResultService {
      * 
      * @returns list
      */
-    async getNoticeResult(tokenDto: tokenDto, cal: string, pgNum: number): Promise<object>{
-        const { userID } = await this.authService.accessValidate(tokenDto);
+    async getNoticeResult(accesstoken: string, cal: string, pgNum: number): Promise<object>{
+        const { userID } = await this.authService.accessValidate(accesstoken);
 
         const thisUser = await this.authEntity.findOneByOrFail({ userID });
         
@@ -65,8 +65,8 @@ export class ResultService {
      * 
      * @returns noticeList
      */
-    async getMoreInfoNotice(tokenDto: tokenDto, noticeID: number): Promise<object> {
-        const { userID } = await this.authService.accessValidate(tokenDto);
+    async getMoreInfoNotice(accesstoken: string, noticeID: number): Promise<object> {
+        const { userID } = await this.authService.accessValidate(accesstoken);
 
         const thisUser = await this.authEntity.findOneByOrFail({ userID });
 
