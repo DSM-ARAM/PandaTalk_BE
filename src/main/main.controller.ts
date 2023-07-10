@@ -34,7 +34,7 @@ export class MainController {
         const data = await this.mainService.getMainPage(accesstoken);
 
         return Object.assign({
-            data,
+            data: data,
             statusCode: 200,
             statusMsg: "메인 페이지에 접속 성공하였습니다."
         })
@@ -57,7 +57,7 @@ export class MainController {
         const data = await this.mainService.getHeader(accesstoken);
 
         return Object.assign({
-            data,
+            data: data,
             statusCode: 200,
             statusMsg: "헤더 데이터를 성공적으로 가져왔습니다."
         })
@@ -81,7 +81,7 @@ export class MainController {
         const data = await this.mainService.Board(accesstoken, noticeDto);
 
         return Object.assign({
-            data, 
+            data: data, 
             statusCode: 201,
             statusMsg: "작성 완료"
         })

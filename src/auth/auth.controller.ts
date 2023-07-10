@@ -105,7 +105,7 @@ export class AuthController {
         const data = await this.authService.createAdminAccount(userAccDto);
 
         return Object.assign({
-            data,
+            data: data,
             statusCode: 201,
             statusMsg: "관리자 계정 생성 성공"
         })

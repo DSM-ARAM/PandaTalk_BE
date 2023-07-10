@@ -30,7 +30,7 @@ export class ResultController {
         const data = await this.resultService.getNoticeResult(accesstoken, cal, pgNum);
 
         return Object.assign({
-            data,
+            data: data,
             statusCode: 200,
             statusMsg: "발송 결과 조회에 성공했습니다."
         })
@@ -48,7 +48,7 @@ export class ResultController {
         const data = await this.resultService.getMoreInfoNotice(accesstoken, noticeID);
 
         return Object.assign({
-            data,
+            data: data,
             statusCode: 200,
             statusMsg: "발송 결과 상세 조회에 성공했습니다."
         })

@@ -39,7 +39,7 @@ export class PeopleController {
     ): Promise<void> {
         const data = await this.peopleService.getGroupList(accesstoken, group);
         return Object.assign({
-            data,
+            data: data,
             statusCode: 200,
             statusMsg: "그룹 리스트 가져오기에 성공했습니다."
         })
@@ -58,7 +58,7 @@ export class PeopleController {
         const data = await this.peopleService.createGroup(accesstoken, createGroupDto);
 
         return Object.assign({
-            data,
+            data: data,
             statusCode: 201,
             statusMsg: "그룹을 성공적으로 만들었습니다."
         })
@@ -77,7 +77,7 @@ export class PeopleController {
         const data = await this.peopleService.deleteGroup(accesstoken, groupID);
 
         return Object.assign({
-            data,
+            data: data,
             statusCode: 204,
             statusMsg: "그룹을 성공적으로 삭제했습니다."
         })
@@ -96,7 +96,7 @@ export class PeopleController {
         const data = await this.peopleService.getGroupMemberList(accesstoken, groupID);
 
         return Object.assign({
-            data,
+            data: data,
             statusCode: 200,
             statusMsg: "그룹 멤버를 성공적으로 불러왔습니다."
         })
@@ -116,7 +116,7 @@ export class PeopleController {
         const data = await this.peopleService.addPeopleIntoGroup(accesstoken, peopleDto);
 
         return Object.assign({
-            data,
+            data: data,
             statusCode: 201,
             statusMsg: "그룹 멤버를 성공적으로 추가하였습니다."
         })
@@ -139,7 +139,7 @@ export class PeopleController {
         const data = await this.peopleService.addOneGroupMember(accesstoken, groupID, peopleDto);
         
         return Object.assign({
-            data,
+            data: data,
             statusCode: 201,
             statusMsg: "그룹 멤버를 성공적으로 추가하였습니다."
         })
@@ -161,7 +161,7 @@ export class PeopleController {
         const data = await this.peopleService.deleteGroupMember(accesstoken, groupID, peopleIDList);
 
         return Object.assign({
-            data,
+            data: data,
             statusCode: 204,
             statusMsg: "그룹 멤버를 성공적으로 삭제하였습니다."
         })
