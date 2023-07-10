@@ -1,8 +1,10 @@
 import { Body, Controller, Get, Header, Headers, Post, UseFilters } from '@nestjs/common';
-import { ApiHeader, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiConflictResponse, ApiCreatedResponse, ApiHeader, ApiOkResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { tokenDto } from 'src/auth/dto/token.dto';
 import { HttpExceptionFilter } from 'src/http-exception.filter/http-exception.filters';
 import { noticeDto } from 'src/notice/dto/notice.dto';
+import { getHeaderResultDto } from './dto/getHeaderResult.dto';
+import { getMainResultDto } from './dto/getMainResult.dto';
 import { MainService } from './main.service';
 
 @ApiTags('Main')
@@ -20,7 +22,12 @@ export class MainController {
     @ApiHeader({ name: "refreshtoken", required: true })
     @ApiOkResponse({
         status: 200,
-        description: "메인 페이지에 접속 성공하였습니다."
+        description: "메인 페이지에 접속 성공하였습니다.",
+        type: getMainResultDto
+    })
+    @ApiUnauthorizedResponse({
+        status: 401,
+        description: "로그인 없이 접속 시도"
     })
     @Get('')
     async getMainPage(@Headers('authorization') accesstoken: string): Promise<void> {
@@ -38,7 +45,12 @@ export class MainController {
     @ApiHeader({ name: "refreshtoken", required: true })
     @ApiOkResponse({
         status: 200,
-        description: "헤더 데이터를 성공적으로 가져왔습니다."
+        description: "헤더 데이터를 성공적으로 가져왔습니다.",
+        type: getHeaderResultDto
+    })
+    @ApiUnauthorizedResponse({
+        status: 401,
+        description: "로그인하지 않고 접속 시도"
     })
     @Get('header')
     async getHeader(@Headers('authorization') accesstoken: string) {
@@ -51,6 +63,19 @@ export class MainController {
         })
     }
 
+    @ApiOperation({summary:"임시 글 작성 Api", description: "알림발송 미구현 상태에서 임시로 글 작성 가능하도록 함"})
+    @ApiCreatedResponse({
+        status: 201,
+        description: "작성 완료",
+    })
+    @ApiUnauthorizedResponse({
+        status: 401,
+        description: "로그인하지 않은 상태로 접속 시도"
+    })
+    @ApiConflictResponse({
+        status: 409,
+        description: "올바르지 않은 상태 입력"
+    })
     @Post('notice')
     async notice(@Headers('authorization') accesstoken: string, @Body() noticeDto: noticeDto) {
         const data = await this.mainService.Board(accesstoken, noticeDto);

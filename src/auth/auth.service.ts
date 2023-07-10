@@ -40,7 +40,7 @@ export class AuthService {
             secret: this.config.get<string>('process.env.JWT_SECRET_ACCESS')
         });
 
-        return (`Bearer ${accessToken}`);
+        return accessToken;
     }
 
     /** 
@@ -58,7 +58,7 @@ export class AuthService {
             expiresIn: '1d'
         })
 
-        return (`Bearer ${refreshToken}`);
+        return refreshToken;
     }
 
     /**

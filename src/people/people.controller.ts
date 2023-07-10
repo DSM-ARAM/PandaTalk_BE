@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Headers, Param, Post, Query, UseFilters } from '@nestjs/common';
-import { ApiBody, ApiCreatedResponse, ApiHeader, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConflictResponse, ApiCreatedResponse, ApiHeader, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { tokenDto } from 'src/auth/dto/token.dto';
 import { HttpExceptionFilter } from 'src/http-exception.filter/http-exception.filters';
 import { createGroupDto } from './dto/createGroup.dto';
@@ -21,6 +21,14 @@ export class PeopleController {
     @ApiOkResponse({
         status: 200,
         description: "그룹 리스트 가져오기에 성공했습니다."
+    })
+    @ApiUnauthorizedResponse({
+        status: 401,
+        description: "로그인 없이 접속 시도"
+    })
+    @ApiConflictResponse({
+        status: 409,
+        description: "올바르지 않은 파라미터 값"
     })
     @ApiHeader({ name: 'accesstoken', required: true })
     @ApiHeader({ name: 'refreshtoken', required: true })
