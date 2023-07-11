@@ -80,7 +80,7 @@ export class MainService {
             noticeStat: noticeDto.noticeStat,
             noticeFor: noticeDto.noticeFor,
             noticeChecked: noticeDto.noticeChecked,
-            createAt: noticeDto.createdAt,
+            createAt: new Date()
         })
 
         return newNotice;

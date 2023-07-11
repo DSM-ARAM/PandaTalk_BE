@@ -27,6 +27,7 @@ import { MainModule } from './main/main.module';
       migrations: [__dirname + '/**/migrations/*.js'],
       migrationsTableName: 'migrations',
       autoLoadEntities: true,
+      timezone: 'z'
     }),
     RedisModule.forRoot({ // 레디스
       readyLog: true,

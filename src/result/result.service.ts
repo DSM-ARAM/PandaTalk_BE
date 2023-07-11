@@ -43,16 +43,18 @@ export class ResultService {
         const thisNotice = await this.noticeEntity.find({
             where: {
                 createdAt: Between(
-                    new Date(Number(date[0]), Number(date[1]) - 1, 2),
-                    new Date(Number(date[0]), Number(date[1]), 1)
+                    new Date(Number(date[0]), Number(date[1]) - 1, 2, -15),
+                    new Date(Number(date[0]), Number(date[1]), 1, 8, 59, 59)
                 )
             },
             order: {
                 createdAt: "asc"
             },
-            skip: pgNum * 10,
+            skip: (pgNum - 1) * 10,
             take: 10,
         })
+
+        console.log(thisNotice)
 
         return thisNotice;
     }
