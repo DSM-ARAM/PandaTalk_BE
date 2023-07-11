@@ -67,7 +67,7 @@ export class PeopleService {
 
         if (!thisUser) throw new UnauthorizedException();
 
-        if (thisUser.userName != 'admin' && createGroupDto.groupIs == groupIs.c) throw new ForbiddenException();
+        if (thisUser.userLogID != 'admin' && createGroupDto.groupIs == groupIs.c) throw new ForbiddenException();
         else if (thisUser.userName == 'admin' && createGroupDto.groupIs == groupIs.p) throw new ForbiddenException();
 
         const thisGroup = await this.groupEntity.findOneBy({
