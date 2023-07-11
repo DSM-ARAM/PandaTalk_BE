@@ -134,7 +134,7 @@ export class PeopleService {
         const thisGroup = await this.groupEntity.findOneBy({ groupID: groupID });
 
         if (!thisGroup) throw new NotFoundException();
-        if (thisGroup.groupIs == groupIs.c && thisUser.userName != 'admin') throw new ForbiddenException();
+        if (thisGroup.groupIs == groupIs.c && thisUser.userLogID != 'admin') throw new ForbiddenException();
         if (thisGroup.groupIs == groupIs.p && thisGroup.groupOwnerID != thisUser.userID) throw new ForbiddenException();
 
         const thisGroupMember = await this.peopleEntity.findBy({ peopleGroupID: thisGroup.groupID })
