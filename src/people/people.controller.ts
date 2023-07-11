@@ -34,7 +34,7 @@ export class PeopleController {
     @ApiHeader({ name: 'refreshtoken', required: true })
     @Get('group?')
     async getGroupList(
-        @Headers() accesstoken: string,
+        @Headers('authorization') accesstoken: string,
         @Query('group') group: groupIs,
     ): Promise<void> {
         const data = await this.peopleService.getGroupList(accesstoken, group);
