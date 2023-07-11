@@ -71,7 +71,7 @@ export class MainService {
 
         if (!thisUser) throw new UnauthorizedException();
 
-        if (noticeDto.noticeStat != noticeStat.b && noticeStat.c ) throw new ConflictException();
+        if (noticeDto.noticeStat != noticeStat.b && noticeDto.noticeStat != noticeStat.c ) throw new ConflictException();
 
         const newNotice = await this.noticeEntity.save({
             noticeHead: noticeDto.noticeHead,
