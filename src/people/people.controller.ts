@@ -54,7 +54,7 @@ export class PeopleController {
     @ApiHeader({ name: 'refreshtoken', required: true })
     @ApiBody({ type: createGroupDto })
     @Post('new')
-    async createGroup(@Headers() accesstoken: string, @Body() createGroupDto: createGroupDto): Promise<void>{
+    async createGroup(@Headers('authorization') accesstoken: string, @Body() createGroupDto: createGroupDto): Promise<void>{
         const data = await this.peopleService.createGroup(accesstoken, createGroupDto);
 
         return Object.assign({
@@ -73,7 +73,7 @@ export class PeopleController {
     @ApiHeader({ name: 'refreshtoken', required: true })
     @ApiParam({ name: 'groupID', type: 'number' })
     @Delete(':groupID')
-    async deleteGroup(@Headers() accesstoken: string, @Param() groupID: number): Promise<void> {
+    async deleteGroup(@Headers('authorization') accesstoken: string, @Param() groupID: number): Promise<void> {
         const data = await this.peopleService.deleteGroup(accesstoken, groupID);
 
         return Object.assign({
@@ -92,7 +92,7 @@ export class PeopleController {
     @ApiHeader({ name: 'refreshtoken', required: true })
     @ApiParam({ name: 'groupID', type: 'number' })
     @Get('member/:groupID')
-    async getGroupMemberList(@Headers() accesstoken: string, @Param() groupID: number): Promise<void>{
+    async getGroupMemberList(@Headers('authorization') accesstoken: string, @Param() groupID: number): Promise<void>{
         const data = await this.peopleService.getGroupMemberList(accesstoken, groupID);
 
         return Object.assign({
@@ -112,7 +112,7 @@ export class PeopleController {
     @ApiParam({ name: 'groupID', type: 'number' })
     @ApiBody({ type: [peopleDto] })
     @Post('member')
-    async add(@Headers() accesstoken: string, @Body('peopleDto') peopleDto: peopleDto[]): Promise<void>{
+    async add(@Headers('authorization') accesstoken: string, @Body('peopleDto') peopleDto: peopleDto[]): Promise<void>{
         const data = await this.peopleService.addPeopleIntoGroup(accesstoken, peopleDto);
 
         return Object.assign({
@@ -133,7 +133,7 @@ export class PeopleController {
     @ApiBody({ type: peopleDto })
     @Post('member/:groupID')
     async addOneMemberIntoGroup(
-        @Headers() accesstoken: string,
+        @Headers('authorization') accesstoken: string,
         @Param('groupID') groupID: number,
         @Body() peopleDto: peopleDto): Promise<void> {
         const data = await this.peopleService.addOneGroupMember(accesstoken, groupID, peopleDto);
