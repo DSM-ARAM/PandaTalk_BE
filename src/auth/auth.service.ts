@@ -69,7 +69,8 @@ export class AuthService {
     async accessValidate(accesstoken: string): Promise<validateResultDto>{
         const accessSecret: string = this.config.get<string>('process.env.JWT_SECRET_ACCESS');
         console.log(accesstoken)
-        const thisAccess = await this.jwtService.verify(accesstoken, { secret : accessSecret });
+        const access: string = accesstoken.split(' ')[1]
+        const thisAccess = await this.jwtService.verify(access, { secret : accessSecret });
 
         if (!thisAccess) return null;
 
